@@ -137,70 +137,65 @@ def main():
 
     args = arg_parser.parse_args()
 
-    try:
-        # Load databases
-        db = biblib.bib.Parser().parse(args.bib, log_fp=sys.stderr).get_entries()
+    # Load databases
+    db = biblib.bib.Parser().parse(args.bib, log_fp=sys.stderr).get_entries()
 
-        # Create an empty file for the output - throws an exception if no write perm
-        f = open(args.outfile,'w')
-        f.close()
+    # Create an empty file for the output - throws an exception if no write perm
+    f = open(args.outfile,'w')
+    f.close()
 
-        # Create abbreviate object
-        abbreviate = Abbreviate.create()
+    # Create abbreviate object
+    abbreviate = Abbreviate.create()
 
-        # Iterate through the database
-        for ent in db.values():
+    # Iterate through the database
+    for ent in db.values():
 
-            # Find empty fields
-            clear = 'shorttitle abstract keywords copyright note langid language urldate timestamp file groups'.split()
-            for key in ent.keys():
-                if key not in clear and not ent[key]:
-                    clear.append(key)
+        # Find empty fields
+        clear = 'shorttitle abstract keywords copyright note langid language urldate timestamp file groups'.split()
+        for key in ent.keys():
+            if key not in clear and not ent[key]:
+                clear.append(key)
 
-            # Clear unnecessary and empty fields for all entries
+        # Clear unnecessary and empty fields for all entries
+        for key in clear:
+            try: del ent[key]
+            except KeyError: pass
+
+        if ent.typ == 'article':
+            # Clear additional field for journal articles
+            clear = 'editor publisher'.split()
             for key in clear:
                 try: del ent[key]
                 except KeyError: pass
 
-            if ent.typ == 'article':
-                # Clear additional field for journal articles
-                clear = 'editor publisher'.split()
-                for key in clear:
-                    try: del ent[key]
-                    except KeyError: pass
+            # Abbreviate journal names
+            j = biblib.algo.tex_to_unicode(ent['journal'])
+            j_abbrev = abbrev_journal(j, args.abbrev)
+            ent['journal'] = j_abbrev
+            if args.verbose and j != j_abbrev:
+                j_c, j_abbrev_c = colors.colordiff(j,j_abbrev)
+                print(f'{j_c} -> {j_abbrev_c}')
 
-                # Abbreviate journal names
-                j = biblib.algo.tex_to_unicode(ent['journal'])
-                j_abbrev = abbrev_journal(j, args.abbrev)
-                ent['journal'] = j_abbrev
-                if args.verbose and j != j_abbrev:
-                    j_c, j_abbrev_c = colors.colordiff(j,j_abbrev)
-                    print(f'{j_c} -> {j_abbrev_c}')
+        elif ent.typ == 'inproceedings':
+            # Clear additional field for conference proceedings
+            clear = 'editor publisher address series booktitleaddon eventtitle'.split()
+            for key in clear:
+                try: del ent[key]
+                except KeyError: pass
 
-            elif ent.typ == 'inproceedings':
-                # Clear additional field for conference proceedings
-                clear = 'editor publisher address series booktitleaddon eventtitle'.split()
-                for key in clear:
-                    try: del ent[key]
-                    except KeyError: pass
+            # Trim and abbreviate conference titles
+            conf = biblib.algo.tex_to_unicode(ent['booktitle'])
+            conf_abbrev = abbrev_conference(conf,
+                proc=args.proc, annu=args.annu, order=args.order, abbr=args.abbrev)
+            ent['booktitle'] = '{' + conf_abbrev + '}'
+            if args.verbose and conf != conf_abbrev:
+                conf_c, conf_abbrev_c = colors.colordiff(conf,conf_abbrev)
+                print(f'{conf_c} -> {conf_abbrev_c}')
 
-                # Trim and abbreviate conference titles
-                conf = biblib.algo.tex_to_unicode(ent['booktitle'])
-                conf_abbrev = abbrev_conference(conf,
-                    proc=args.proc, annu=args.annu, order=args.order, abbr=args.abbrev)
-                ent['booktitle'] = '{' + conf_abbrev + '}'
-                if args.verbose and conf != conf_abbrev:
-                    conf_c, conf_abbrev_c = colors.colordiff(conf,conf_abbrev)
-                    print(f'{conf_c} -> {conf_abbrev_c}')
-
-            # Write the updated entry to the output
-            with open(args.outfile, 'a') as f:
-                f.write(ent.to_bib())
-                f.write("\n\n")
-
-
-    except biblib.messages.InputError:
-        sys.exit(1)
+        # Write the updated entry to the output
+        with open(args.outfile, 'a') as f:
+            f.write(ent.to_bib())
+            f.write("\n\n")
 
 if __name__ == '__main__':
     main()

@@ -428,6 +428,8 @@ class TeXToUnicode(TeXProcessor):
         '\\aa': 'å', '\\AA': 'Å', '\\l': 'ł', '\\L': 'Ł',
         # Other defs from plain.tex
         '\\_': '_', '\\dag': '†', '\\ddag': '‡', '\\S': '§', '\\P': '¶',
+        # Defs from textcomp (latex)
+        '\\textendash': '–', '\\textemdash': '—', '\\texteuro': '€',
     }
 
     # TeX accent control sequences to Unicode combining characters
