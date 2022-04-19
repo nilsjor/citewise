@@ -117,6 +117,9 @@ def main():
     arg_parser.add_argument('-o', '--outfile', default='output.bib',
         help='Name of output file')
 
+    arg_parser.add_argument('-v', '--verbose', default=False, action='store_true',
+        help='Highlight changes made to titles')
+
     arg_parser.add_argument('--no-abbrev', dest='abbrev', default=True,
         help='Skip the abbreviation step', action='store_false')
 
@@ -170,7 +173,7 @@ def main():
                 j = biblib.algo.tex_to_unicode(ent['journal'])
                 j_abbrev = abbrev_journal(j, args.abbrev)
                 ent['journal'] = j_abbrev
-                if j != j_abbrev:
+                if args.verbose and j != j_abbrev:
                     j_c, j_abbrev_c = colors.colordiff(j,j_abbrev)
                     print(f'{j_c} -> {j_abbrev_c}')
 
@@ -186,7 +189,7 @@ def main():
                 conf_abbrev = abbrev_conference(conf,
                     proc=args.proc, annu=args.annu, order=args.order, abbr=args.abbrev)
                 ent['booktitle'] = '{' + conf_abbrev + '}'
-                if conf != conf_abbrev:
+                if args.verbose and conf != conf_abbrev:
                     conf_c, conf_abbrev_c = colors.colordiff(conf,conf_abbrev)
                     print(f'{conf_c} -> {conf_abbrev_c}')
 
