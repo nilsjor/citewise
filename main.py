@@ -150,8 +150,10 @@ def main():
     # Iterate through the database
     for ent in db.values():
 
-        # Find empty fields
-        clear = 'shorttitle abstract keywords copyright note langid language urldate timestamp file groups'.split()
+        # Fields to clear
+        clear = 'shorttitle abstract pages keywords copyright note langid language urldate timestamp file groups'.split()
+
+        # Find empty fields and add to the list
         for key in ent.keys():
             if key not in clear and not ent[key]:
                 clear.append(key)
@@ -172,13 +174,23 @@ def main():
             j = biblib.algo.tex_to_unicode(ent['journal'])
             j_abbrev = abbrev_journal(j, args.abbrev)
             ent['journal'] = j_abbrev
+
+            # Special treatment for ePrints
+            try:
+                if ent['eprint'] + ent['eprinttype'] + ent['primaryclass'] != None:
+                    # Remove the journal field
+                    try: del ent['journal']
+                    except KeyError: pass
+            except biblib.bib.FieldError: pass
+
+            # Print changes
             if args.verbose and j != j_abbrev:
                 j_c, j_abbrev_c = colors.colordiff(j,j_abbrev)
                 print(f'{j_c} -> {j_abbrev_c}')
 
         elif ent.typ == 'inproceedings':
             # Clear additional field for conference proceedings
-            clear = 'editor publisher address series booktitleaddon eventtitle'.split()
+            clear = 'editor publisher address series booktitleaddon eventtitle volume'.split()
             for key in clear:
                 try: del ent[key]
                 except KeyError: pass
@@ -188,6 +200,8 @@ def main():
             conf_abbrev = abbrev_conference(conf,
                 proc=args.proc, annu=args.annu, order=args.order, abbr=args.abbrev)
             ent['booktitle'] = '{' + conf_abbrev + '}'
+
+            # Print changes
             if args.verbose and conf != conf_abbrev:
                 conf_c, conf_abbrev_c = colors.colordiff(conf,conf_abbrev)
                 print(f'{conf_c} -> {conf_abbrev_c}')
