@@ -162,6 +162,24 @@ def main():
             try: del ent[key]
             except KeyError: pass
 
+        if ent.typ == 'techreport':
+            # It type not present, use default
+            try: 
+                t = bibalg.tex_to_unicode(ent['type'])
+            except biblib.FieldError:
+                t = 'Technical Report'
+
+            # Abbreviate techrep type
+            if args.abbrev: t_abbrev = abbrev_journal(t)
+            else: t_abbrev = t
+
+            ent['type'] = '{' + t_abbrev + '}'
+
+            # Print changes
+            if args.verbose and t != t_abbrev:
+                t_c, t_abbrev_c = colors.colordiff(t,t_abbrev)
+                print(f'{t_c} -> {t_abbrev_c}')
+
         if ent.typ == 'article':
             # Clear additional field for journal articles
             clear = 'editor publisher'.split()
