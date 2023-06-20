@@ -3,9 +3,8 @@ import argparse
 import sys
 import re
 
-import biblib.bib
-import biblib.messages
-import biblib.algo
+from biblib import bib as biblib
+from biblib import algo as bibalg
 
 import pyiso4
 from pyiso4.ltwa import Abbreviate
@@ -138,7 +137,7 @@ def main():
     args = arg_parser.parse_args()
 
     # Load databases
-    db = biblib.bib.Parser().parse(args.bib, log_fp=sys.stderr).get_entries()
+    db = biblib.Parser().parse(args.bib, log_fp=sys.stderr).get_entries()
 
     # Create an empty file for the output - throws an exception if no write perm
     f = open(args.outfile,'w')
@@ -171,7 +170,7 @@ def main():
                 except KeyError: pass
 
             # Abbreviate journal names
-            j = biblib.algo.tex_to_unicode(ent['journal'])
+            j = bibalg.tex_to_unicode(ent['journal'])
             j_abbrev = abbrev_journal(j, args.abbrev)
             ent['journal'] = j_abbrev
 
@@ -181,7 +180,17 @@ def main():
                     # Remove the journal field
                     try: del ent['journal']
                     except KeyError: pass
-            except biblib.bib.FieldError: pass
+            except biblib.FieldError: pass
+
+            # # SUPER COMPACT special treatment for ePrints
+            # try:
+            #     if ent['eprint'] + ent['eprinttype'] + ent['primaryclass'] != None:
+            #         ent['journal'] = 'arXiv'
+            #         clear = 'eprint eprinttype primaryclass archiveprefix'.split()
+            #         for key in clear:
+            #             try: del ent[key]
+            #             except KeyError: pass
+            # except biblib.FieldError: pass
 
             # Print changes
             if args.verbose and j != j_abbrev:
@@ -196,7 +205,7 @@ def main():
                 except KeyError: pass
 
             # Trim and abbreviate conference titles
-            conf = biblib.algo.tex_to_unicode(ent['booktitle'])
+            conf = bibalg.tex_to_unicode(ent['booktitle'])
             conf_abbrev = abbrev_conference(conf,
                 proc=args.proc, annu=args.annu, order=args.order, abbr=args.abbrev)
             ent['booktitle'] = '{' + conf_abbrev + '}'
@@ -209,7 +218,7 @@ def main():
         # Write the updated entry to the output
         with open(args.outfile, 'a') as f:
             f.write(ent.to_bib())
-            f.write("\n\n")
+            f.write('\n\n')
 
 if __name__ == '__main__':
     main()
