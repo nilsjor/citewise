@@ -21,9 +21,6 @@ def abbrev_journal(string, abbr=True):
     # Create list for every new step
     process = [string]
 
-    # Remove trailing acronyms, e.g. " (CDC)", ", AAMAS", or " - WWW"
-    process.append( re.sub('(\s+\(.+\)|[\,\;\:\-\–\—]\s+\S+)\s*$', '', process[-1]) )
-
     if abbr:
 
         # Remove any additional punctuation
@@ -61,7 +58,7 @@ def abbrev_conference(string, proc=None, annu=False, order=False, abbr=True):
     process.append( re.sub(r'(\b)([a-z]{4,})',
         lambda s : s.group(1) + s.group(2).title(), process[-1]) )
 
-    # Remove the number in the order, e.g. "4th", "Twenty-Sixth"
+    # Optional: Remove the number in the order, e.g. "4th", "Twenty-Sixth"
     if order:
         if re.search('\d+(st|nd|rd|th)\s+', process[-1], flags=re.IGNORECASE):
             process.append( re.sub('\d+(st|nd|rd|th)\s+', '', process[-1], flags=re.IGNORECASE) )
@@ -75,7 +72,7 @@ def abbrev_conference(string, proc=None, annu=False, order=False, abbr=True):
     # Optional: Enforce/remove "Proceedings"
     if proc == 'remove':
         process.append( re.sub('(Proceedings)\s*(of the)?\s+', '', process[-1], flags=re.IGNORECASE) )
-    elif proc != 'keep' and 'Proceedings' not in process[-1].split():
+    elif proc != 'ignore' and 'Proceedings' not in process[-1].split():
         process.append( 'Proceedings of the ' + process[-1] )
 
     # Optional: Apply ISO4 abbreviations
@@ -116,23 +113,23 @@ def main():
     arg_parser.add_argument('-o', '--outfile', default='output.bib',
         help='Name of output file')
 
-    arg_parser.add_argument('-v', '--verbose', default=False, action='store_true',
-        help='Highlight changes made to titles')
+    arg_parser.add_argument('-q', '--quiet', default=False, action='store_true',
+        help='Suppress printing the changes to the console')
 
-    arg_parser.add_argument('--no-abbrev', dest='abbrev', default=True,
+    arg_parser.add_argument('-n', '--no-abbrev', dest='abbrev', default=True,
         help='Skip the abbreviation step', action='store_false')
 
-    command_group = arg_parser.add_mutually_exclusive_group()
-    command_group.add_argument('--remove-proc', dest='proc', action='store_const',
-        help='Remove "Proceedings" prefix from conference titles', const='remove')
-    command_group.add_argument('--keep-proc', dest='proc', action='store_const',
-        help='Ignore any "Proceedings" prefix in conference titles', const='keep')
-
-    arg_parser.add_argument('--keep-order', dest='order', default=True,
+    arg_parser.add_argument('--ignore-order', dest='order', default=True,
         help='Ignore any ordering in conference titles, e.g. "3rd"', action='store_false')
 
-    arg_parser.add_argument('--keep-annual', dest='annu', default=True,
+    arg_parser.add_argument('--ignore-annual', dest='annu', default=True,
         help='Ignore any "Annual" in conference titles', action='store_false')
+
+    command_group = arg_parser.add_mutually_exclusive_group()
+    command_group.add_argument('--ignore-proc', dest='proc', action='store_const',
+        help='Ignore any "Proceedings" prefix in conference titles', const='ignore')
+    command_group.add_argument('--remove-proc', dest='proc', action='store_const',
+        help='Remove "Proceedings" prefix from conference titles', const='remove')
 
     args = arg_parser.parse_args()
 
@@ -164,7 +161,7 @@ def main():
 
         if ent.typ == 'techreport':
             # It type not present, use default
-            try: 
+            try:
                 t = bibalg.tex_to_unicode(ent['type'])
             except biblib.FieldError:
                 t = 'Technical Report'
@@ -229,7 +226,7 @@ def main():
             ent['booktitle'] = '{' + conf_abbrev + '}'
 
             # Print changes
-            if args.verbose and conf != conf_abbrev:
+            if not args.quiet and conf != conf_abbrev:
                 conf_c, conf_abbrev_c = colors.colordiff(conf,conf_abbrev)
                 print(f'{conf_c} -> {conf_abbrev_c}')
 
