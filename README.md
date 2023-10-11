@@ -1,4 +1,8 @@
-# BibTeX reference abbreviation tool implementing the ISO 4 standard
+# citewise
+BibTeX reference abbreviation tool implementing the ISO 4 standard
+
+## Background
+
 This tool was written out of necessity, when I was working on a conference paper and needed to "compress" the list of citations as much as possible, without removing any references or any of the required fields.
 
 The main purpose is to automatically prune and abbreviate journal and conference names, as well as some minor touches on other bib-fields.
@@ -9,10 +13,12 @@ Currently, it handles Journal Articles, Conference Proceedings, Technical Report
 Please note that all text processing is rule-based, there is no NPL or high-level AI operating here.
 
 ## Dependencies
-This requires [pyiso4](https://github.com/pierre-24/pyiso4) to be installed, read the instructions on their webpage.
+This requires [`pyiso4`](https://github.com/pierre-24/pyiso4) to be installed, read the instructions on their webpage.
 ```sh
 pip install pyiso4
 ```
+
+It also comes bundled with [`biblib`](https://github.com/aclements/biblib/tree/master) by Austin Clements. This is not to be confused with https://pypi.org/project/biblib/0.1.3/.
 
 ## Prerequisites
 `PYTHONUTF8=1`

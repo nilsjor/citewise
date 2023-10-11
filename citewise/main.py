@@ -3,13 +3,13 @@ import argparse
 import sys
 import re
 
-from biblib import bib as biblib
-from biblib import algo as bibalg
+from citewise.biblib import bib as biblib
+from citewise.biblib import algo as bibalg
 
 import pyiso4
 from pyiso4.ltwa import Abbreviate
 
-import colors
+from citewise import colors
 
 def abbrev_journal(string, abbr=True):
 
@@ -173,7 +173,7 @@ def main():
             ent['type'] = '{' + t_abbrev + '}'
 
             # Print changes
-            if args.verbose and t != t_abbrev:
+            if not args.quiet and t != t_abbrev:
                 t_c, t_abbrev_c = colors.colordiff(t,t_abbrev)
                 print(f'{t_c} -> {t_abbrev_c}')
 
@@ -197,18 +197,8 @@ def main():
                     except KeyError: pass
             except biblib.FieldError: pass
 
-            # # SUPER COMPACT special treatment for ePrints
-            # try:
-            #     if ent['eprint'] + ent['eprinttype'] + ent['primaryclass'] != None:
-            #         ent['journal'] = 'arXiv'
-            #         clear = 'eprint eprinttype primaryclass archiveprefix'.split()
-            #         for key in clear:
-            #             try: del ent[key]
-            #             except KeyError: pass
-            # except biblib.FieldError: pass
-
             # Print changes
-            if args.verbose and j != j_abbrev:
+            if not args.quiet and j != j_abbrev:
                 j_c, j_abbrev_c = colors.colordiff(j,j_abbrev)
                 print(f'{j_c} -> {j_abbrev_c}')
 
