@@ -102,35 +102,43 @@ def main():
     # Yes, I did it this way.
     global abbreviate
 
-    # Parse arguments
+    # Create argument parser
     arg_parser = argparse.ArgumentParser(
         description='Abbreviate and shorten journal and conference names and prune ' +
                     'unnecessary fields from one or more .bib database(s)')
 
+    # Positional arguments
     arg_parser.add_argument('bib', nargs='+', type=open,
         help='.bib file(s) to process')
 
+    # Optional argument: output file
     arg_parser.add_argument('-o', '--outfile', default='output.bib',
         help='Name of output file')
 
+    # Optional argument: quiet
     arg_parser.add_argument('-q', '--quiet', default=False, action='store_true',
         help='Suppress printing the changes to the console')
 
+    # Optional argument: skip abbreviation
     arg_parser.add_argument('-n', '--no-abbrev', dest='abbrev', default=True,
         help='Skip the abbreviation step', action='store_false')
 
+    # Optional argument: ignore ordering
     arg_parser.add_argument('--ignore-order', dest='order', default=True,
         help='Ignore any ordering in conference titles, e.g. "3rd"', action='store_false')
 
+    # Optional argument: ignore "annual"
     arg_parser.add_argument('--ignore-annual', dest='annu', default=True,
         help='Ignore any "Annual" in conference titles', action='store_false')
 
+    # Optional argument: ignore/remove "Proceedings"
     command_group = arg_parser.add_mutually_exclusive_group()
     command_group.add_argument('--ignore-proc', dest='proc', action='store_const',
         help='Ignore any "Proceedings" prefix in conference titles', const='ignore')
     command_group.add_argument('--remove-proc', dest='proc', action='store_const',
         help='Remove "Proceedings" prefix from conference titles', const='remove')
 
+    # Parse arguments
     args = arg_parser.parse_args()
 
     # Load databases
