@@ -23,10 +23,15 @@ It also comes bundled with [`biblib`](https://github.com/aclements/biblib/tree/m
 ## Prerequisites
 `PYTHONUTF8=1`
 
+## Installing from source
+```sh
+python setup.py sdist && pip install dist/citewise*.gz
+```
+
 ## Usage
 Example usage
 ```sh
-python main.py refs.bib -o refs-abbrev.bib
+citewise refs.bib -o refs-abbrev.bib
 ```
 
 ### Conference Proceedings
